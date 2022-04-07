@@ -22,3 +22,11 @@ h3{
     display: flex;
     justify-content: space-between;
 }
+
+.email-inbox{
+    cursor: pointer;
+}
+
+#archive-btn{
+    margin-left: 1rem;
+}
