@@ -11,13 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
   
 });
 
-function compose_email() {
+function compose_email(data) {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
-
 
   document.querySelector('#compose-form').onsubmit = () => {
     fetch('/emails', {
@@ -38,12 +37,6 @@ function compose_email() {
 
     return false;
   };
-
-  // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
-
 }
 
 function load_mailbox(mailbox) {
@@ -121,6 +114,7 @@ function load_mailbox(mailbox) {
     fetch('emails/' + email_id)
     .then(response => response.json())
     .then(data => {
+      // Create elements
       const div = document.createElement('div');
       const p_sender = document.createElement('p');
       const p_recipients = document.createElement('p');
@@ -128,7 +122,9 @@ function load_mailbox(mailbox) {
       const p_body = document.createElement('p');
       const p_timestamp = document.createElement('p');
       const archive_btn = document.createElement('button');
+      const reply_btn =  document.createElement('button');
 
+      // Change content to email data
       p_sender.innerHTML = "<strong>From:</strong> " + data.sender;
       p_recipients.innerHTML = "<strong>To:</strong> " + data.recipients;
       p_subject.innerHTML = "<strong>Subject:</strong> " + data.subject;
@@ -137,6 +133,11 @@ function load_mailbox(mailbox) {
       archive_btn.className = 'btn btn-primary';
       archive_btn.id = 'archive-btn';
 
+      reply_btn.className = 'btn btn-secondary';
+      reply_btn.id = 'reply-btn';
+      reply_btn.innerHTML = 'Reply';
+
+      // Creates Archive Button
       if (!data.archived){
         archive_btn.innerHTML = 'Archive';
       }
@@ -144,6 +145,7 @@ function load_mailbox(mailbox) {
         archive_btn.innerHTML = 'Unarchive';
       }
 
+      // Add event to button to change archived state
       archive_btn.addEventListener('click', () => {
         if (archive_btn.innerHTML === 'Archive'){
           archive_btn.innerHTML = 'Unarchive';
@@ -166,14 +168,40 @@ function load_mailbox(mailbox) {
         load_mailbox('inbox');
       });
 
+      reply_btn.addEventListener('click', () => {
+        if (mailbox !== 'sent'){
+          document.querySelector('#compose-recipients').value = data.sender;
+        }
+        else{
+          document.querySelector('#compose-recipients').value = data.recipients;
+        }
+
+
+        if (data.subject.split()[0] === 'R' && data.subject.split()[1] === 'e' && data.subject.split()[3] === ':'){
+          document.querySelector('#compose-subject').value = data.subject;
+        }
+        else{
+          document.querySelector('#compose-subject').value = "Re: " + data.subject;
+        }
+        document.querySelector('#compose-body').value = `On ${data.timestamp} ${data.sender} wrote: ${data.body}`;
+
+
+        compose_email();
+      });
+
+      // Append all elements created to div and then append div to email view
       div.append(p_sender);
       div.append(p_recipients);
       div.append(p_subject);
       div.append(p_body);
       div.append(p_timestamp);
+
+      // If sent mailbox doesn't append archive button
       if (mailbox !== 'sent'){
         div.append(archive_btn);
       }
+
+      div.append(reply_btn);
 
       document.querySelector('#email-view').append(div);
 
