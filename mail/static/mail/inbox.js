@@ -57,8 +57,8 @@ function load_mailbox(mailbox) {
         const p_subject = document.createElement('p');
         const p_timestamp = document.createElement('p');
 
-        p_sender.innerHTML = "From: " + email.sender;
-        p_subject.innerHTML = "Subject: " + email.subject;
+        p_sender.innerHTML = "<strong>From:</strong> " + email.sender;
+        p_subject.innerHTML = "<strong>Subject:</strong> " + email.subject;
         p_timestamp.innerHTML = email.timestamp;
         
 
@@ -128,7 +128,7 @@ function load_mailbox(mailbox) {
       p_sender.innerHTML = "<strong>From:</strong> " + data.sender;
       p_recipients.innerHTML = "<strong>To:</strong> " + data.recipients;
       p_subject.innerHTML = "<strong>Subject:</strong> " + data.subject;
-      p_body.innerHTML = "<strong>Message:</strong> " + data.body;
+      p_body.innerHTML = "<strong>Message:</strong> " + data.body.split('-')[0];
       p_timestamp.innerHTML = data.timestamp;
       archive_btn.className = 'btn btn-primary';
       archive_btn.id = 'archive-btn';
@@ -154,6 +154,9 @@ function load_mailbox(mailbox) {
             body: JSON.stringify({
               archived: true,
             })
+          })
+          .then(() => {
+            load_mailbox('inbox');
           });
         }
         else{
@@ -163,9 +166,11 @@ function load_mailbox(mailbox) {
             body: JSON.stringify({
               archived: false,
             })
+          })
+          .then(() => {
+            load_mailbox('inbox');
           });
         }
-        load_mailbox('inbox');
       });
 
       reply_btn.addEventListener('click', () => {
@@ -176,14 +181,15 @@ function load_mailbox(mailbox) {
           document.querySelector('#compose-recipients').value = data.recipients;
         }
 
+        console.log(data.subject.split(':'));
 
-        if (data.subject.split()[0] === 'R' && data.subject.split()[1] === 'e' && data.subject.split()[3] === ':'){
+        if (data.subject.split(':')[0] === "Re"){
           document.querySelector('#compose-subject').value = data.subject;
         }
         else{
           document.querySelector('#compose-subject').value = "Re: " + data.subject;
         }
-        document.querySelector('#compose-body').value = `On ${data.timestamp} ${data.sender} wrote: ${data.body}`;
+        document.querySelector('#compose-body').value = `\n----------\nOn ${data.timestamp} ${data.sender} wrote:\n${data.body}`;
 
 
         compose_email();
