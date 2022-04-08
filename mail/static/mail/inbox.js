@@ -29,7 +29,10 @@ function compose_email(data) {
     })
     .then(response => response.json())
     .then(data => {
-      load_mailbox('inbox');
+      document.querySelector('#compose-recipients').value = '';
+      document.querySelector('#compose-subject').value = '';
+      document.querySelector('#compose-body').value = '';
+      load_mailbox('sent');
     })
     .catch(error => {
       console.log("Error: ", error);
